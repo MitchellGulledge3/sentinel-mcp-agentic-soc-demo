@@ -113,12 +113,12 @@ For the live presenter version, follow [`docs/demo-runbook.md`](docs/demo-runboo
 
 ## Credits / source partner repos
 
-| Partner | API repo (private) | UI repo (public) |
-|---|---|---|
-| Anomali | MitchellGulledge3/anomali-sentinel-mcp-demo | MitchellGulledge3/anomali-sentinel-mcp-demo-ui |
-| Jamf | MitchellGulledge3/jamf-sentinel-mcp-demo | MitchellGulledge3/jamf-sentinel-mcp-demo-ui |
-| Gigamon | MitchellGulledge3/gigamon-sentinel-mcp-demo | MitchellGulledge3/gigamon-sentinel-mcp-demo-ui |
-| BigID | MitchellGulledge3/bigid-sentinel-mcp-demo | MitchellGulledge3/bigid-sentinel-mcp-demo-ui |
-| Veeam | MitchellGulledge3/veeam-sentinel-mcp-demo | MitchellGulledge3/veeam-sentinel-mcp-demo-ui |
+| Partner | UI repo |
+|---|---|
+| Anomali | https://github.com/MitchellGulledge3/anomali-sentinel-mcp-demo-ui |
+| Jamf | https://github.com/MitchellGulledge3/jamf-sentinel-mcp-demo-ui |
+| Gigamon | https://github.com/MitchellGulledge3/gigamon-sentinel-mcp-demo-ui |
+| BigID | https://github.com/MitchellGulledge3/bigid-sentinel-mcp-demo-ui |
+| Veeam | https://github.com/MitchellGulledge3/veeam-sentinel-mcp-demo-ui |
 
 See [`partners.md`](partners.md) for tool inventories per partner.
