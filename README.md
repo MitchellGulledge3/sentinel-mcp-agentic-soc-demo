@@ -80,11 +80,19 @@ That's 5 vendors of data, one row, real joins. Live output is in [`sample-runs/0
 ```bash
 git clone <this repo>
 cd sentinel-mcp-agentic-soc-demo
+
+# Point the seeder at your workspace + DCRs (one-time):
+export SENTINEL_WORKSPACE_ID="<your-workspace-id>"
+export SENTINEL_DCE_ENDPOINT="https://<your-dce>.<region>.ingest.monitor.azure.com"
+export GIGAMON_DCR_ID="dcr-..."
+export BIGID_DCR_ID="dcr-..."
+export VEEAM_DCR_ID="dcr-..."
+
 python3 seed/seed-narrative.py     # idempotent; safe to re-run before each demo
 ```
 
 ### Run each phase
-Open the Sentinel Logs blade against workspace `77429a58-865a-4764-8429-aaacdfe3cb73` and paste each `kql/*.kql` file in order. The last one (`06-cross-partner-correlation.kql`) is the show-stopper.
+Open the Sentinel Logs blade against your workspace and paste each `kql/*.kql` file in order. The last one (`06-cross-partner-correlation.kql`) is the show-stopper.
 
 For the live presenter version, follow [`docs/demo-runbook.md`](docs/demo-runbook.md).
 

@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import subprocess
 import sys
 import urllib.error
@@ -46,23 +47,28 @@ FILE_SERVER_IP     = "10.42.10.50"
 FILE_SHARE_PATH    = "\\\\fin-files-01\\finance\\Q4-2025-earnings\\"
 SENSITIVE_FILENAME = "Q4-2025-Earnings-PRE-RELEASE.xlsx"
 
-# ----- Azure resource config (specific to this demo workspace) -----
-SUBSCRIPTION_ID    = "e74cc169-760f-464c-8a00-2b501de96692"
-WORKSPACE_ID       = "77429a58-865a-4764-8429-aaacdfe3cb73"
-DCE_ENDPOINT       = "https://sample-data-dce-bori.westus2-1.ingest.monitor.azure.com"
+# ----- Azure resource config (override via env vars for your own deployment) -----
+# Set these before running:
+#   export SENTINEL_WORKSPACE_ID="<your-log-analytics-workspace-id>"
+#   export SENTINEL_DCE_ENDPOINT="https://<your-dce>.<region>.ingest.monitor.azure.com"
+#   export GIGAMON_DCR_ID="dcr-..."     GIGAMON_STREAM="Custom-..."
+#   export BIGID_DCR_ID="dcr-..."       BIGID_STREAM="Custom-..."
+#   export VEEAM_DCR_ID="dcr-..."       VEEAM_STREAM="Custom-..."
+WORKSPACE_ID    = os.environ.get("SENTINEL_WORKSPACE_ID",    "00000000-0000-0000-0000-000000000000")
+DCE_ENDPOINT    = os.environ.get("SENTINEL_DCE_ENDPOINT",    "https://<your-dce>.<region>.ingest.monitor.azure.com")
 
 DCRS = {
     "gigamon": {
-        "rule_id": "dcr-9e2ea1c8c81347aba38a402899a94799",
-        "stream":  "Custom-GigamonCcfMcpDemo",
+        "rule_id": os.environ.get("GIGAMON_DCR_ID", "dcr-<your-gigamon-dcr-immutable-id>"),
+        "stream":  os.environ.get("GIGAMON_STREAM", "Custom-GigamonCcfMcpDemo"),
     },
     "bigid": {
-        "rule_id": "dcr-71f20067cf6e4d93af9e42af73308747",
-        "stream":  "Custom-BigIDDSPMAssetStoreDemo",
+        "rule_id": os.environ.get("BIGID_DCR_ID", "dcr-<your-bigid-dcr-immutable-id>"),
+        "stream":  os.environ.get("BIGID_STREAM", "Custom-BigIDDSPMAssetStoreDemo"),
     },
     "veeam_malware": {
-        "rule_id": "dcr-ca8801f2372746fa99d67d89301f046e",
-        "stream":  "Custom-VeeamMalwareEventsDemo",
+        "rule_id": os.environ.get("VEEAM_DCR_ID", "dcr-<your-veeam-dcr-immutable-id>"),
+        "stream":  os.environ.get("VEEAM_STREAM", "Custom-VeeamMalwareEventsDemo"),
     },
 }
 
