@@ -1,0 +1,24 @@
+// ============================================================
+//  Phase 5 — Veeam  →  recovery readiness for the impacted server
+// ============================================================
+//
+// For each affected machine, surface the dirty restore point AND
+// the most recent clean restore point so the agent can recommend
+// a specific recovery target.
+
+let target_machine = "fin-files-01";
+VeeamMalwareEventsDemo_CL
+| where TimeGenerated > ago(2h)
+| where MachineDisplayName == target_machine
+| project TimeGenerated, MachineDisplayName, RestorePointId,
+          RestorePointCreationTime, EventType, Severity, Status,
+          MalwareName, DetectionMethod, AffectedFileCount,
+          AffectedFiles, OriginatingProcess, ImmutabilityState,
+          MarkedClean, BackupRepository, JobName
+| extend RecoveryReason = array_concat(
+    iff(Status == "Clean" and MarkedClean,        dynamic(["clean-restore-target"]),   dynamic([])),
+    iff(Status == "Infected",                      dynamic(["infected-snapshot"]),     dynamic([])),
+    iff(Severity == "High",                        dynamic(["high-severity"]),         dynamic([])),
+    iff(ImmutabilityState startswith "Immutable",  dynamic(["immutable-snapshot"]),    dynamic([])),
+    iff(AffectedFileCount > 10,                    dynamic(["mass-file-impact"]),      dynamic([])))
+| order by RestorePointCreationTime desc

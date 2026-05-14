@@ -1,0 +1,24 @@
+[
+  {
+    "AssetName": "Q4-2025-Earnings-PRE-RELEASE.xlsx",
+    "AssetOwner": "{\"AccountUpn\":\"jsmith@contoso.com\",\"DisplayName\":\"Jane Smith\",\"Department\":\"Finance\"}",
+    "AssetPath": "\\\\fin-files-01\\finance\\Q4-2025-earnings\\Q4-2025-Earnings-PRE-RELEASE.xlsx",
+    "AssetType": "File",
+    "Classification": "PII / Financial / Confidential",
+    "DeviceName": "fin-files-01",
+    "ExposureReason": "[\"highly-confidential\",\"material-non-public-info\",\"contains-ssn\",\"contains-bank-accounts\"]",
+    "ExternalUserWithPermissionCount": "0",
+    "HasBankAccts": "True",
+    "HasMNPI": "True",
+    "HasSSN": "True",
+    "IPAddress": "10.42.10.50",
+    "InternalUserWithPermissionCount": "47",
+    "IsProtectedByDlp": "True",
+    "LastAccessDateTime": "2026-05-14T00:19:49Z",
+    "Note": "Pre-release Q4 earnings workbook. SOX-relevant. Material non-public information.",
+    "Policies": "[\"PII\",\"Financial\",\"SOX\",\"MNPI\"]",
+    "RecordCount": "12482",
+    "SensitivityLabel": "Highly Confidential",
+    "TableName": "PrimaryResult"
+  }
+]

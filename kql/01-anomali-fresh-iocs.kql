@@ -1,0 +1,18 @@
+// ============================================================
+//  Phase 1 — Anomali  →  fresh malicious IOCs landed today
+// ============================================================
+//
+// Pulls the two indicators Anomali ThreatStream published for our
+// storyline: the malicious Apple TeamID and the malicious SHA256.
+//
+// These are the IOCs the agent will pivot on in Phase 2 (Jamf).
+
+ThreatIntelIndicators
+| where SourceSystem == "Anomali ThreatStream"
+| where TimeGenerated > ago(1d)
+| where ObservableValue in ("DEADBEEF99", "yeg88tzva7avny")
+| project TimeGenerated, IndicatorName=tostring(Data.name),
+          ObservableKey, ObservableValue, Confidence,
+          Labels=tostring(Data.labels), Description=tostring(Data.description),
+          KillChain=tostring(Data.kill_chain_phases[0].phase_name)
+| order by Confidence desc

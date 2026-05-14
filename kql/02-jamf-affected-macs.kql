@@ -1,0 +1,40 @@
+// ============================================================
+//  Phase 2 — Jamf  →  endpoints where the IOC landed
+// ============================================================
+//
+// Cross-join Anomali's fresh indicators with Jamf Protect alerts.
+// Returns every Mac where the TeamID or SHA appeared, what process
+// ran it, whether Jamf Protect allowed or prevented it, and a
+// `WhyFlagged` array the agent can quote verbatim.
+
+let anomali_iocs =
+    ThreatIntelIndicators
+    | where SourceSystem == "Anomali ThreatStream"
+    | where TimeGenerated > ago(1d)
+    | where ObservableValue in ("DEADBEEF99", "yeg88tzva7avny")
+    | project IocValue=ObservableValue, IocKind=ObservableKey,
+              Confidence, IocName=tostring(Data.name);
+let jamf_by_teamid =
+    JamfProtectAlertsDemo_CL
+    | where TimeGenerated > ago(2d)
+    | join kind=inner anomali_iocs on $left.TargetBinarySigningTeamID == $right.IocValue
+    | project TimeGenerated, DvcHostname, EventSeverity, EventResult,
+              TargetProcessName, TargetProcessCommandLine,
+              TargetProcessSHA256, TargetbinarySignerType,
+              TargetBinarySigningTeamID, IocKind, IocName, Confidence;
+let jamf_by_sha =
+    JamfProtectAlertsDemo_CL
+    | where TimeGenerated > ago(2d)
+    | join kind=inner anomali_iocs on $left.TargetProcessSHA256 == $right.IocValue
+    | project TimeGenerated, DvcHostname, EventSeverity, EventResult,
+              TargetProcessName, TargetProcessCommandLine,
+              TargetProcessSHA256, TargetbinarySignerType,
+              TargetBinarySigningTeamID, IocKind, IocName, Confidence;
+union jamf_by_teamid, jamf_by_sha
+| extend WhyFlagged = array_concat(
+    iff(EventSeverity == "High",       dynamic(["high-severity"]),               dynamic([])),
+    iff(EventResult   == "Prevented",  dynamic(["exec-prevented"]),              dynamic([])),
+    iff(EventResult   == "Allowed",    dynamic(["exec-allowed-investigate"]),    dynamic([])),
+    iff(TargetbinarySignerType == "Unsigned", dynamic(["unsigned-binary"]),      dynamic([])),
+    iff(TargetProcessName in ("scp","curl","nc","ssh"), dynamic(["exfil-capable-tool"]), dynamic([])))
+| order by EventSeverity asc, TimeGenerated desc

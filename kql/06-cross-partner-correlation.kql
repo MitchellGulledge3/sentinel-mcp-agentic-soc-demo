@@ -1,0 +1,96 @@
+// ============================================================
+//  The Money Shot — single query joining all 5 partners
+// ============================================================
+//
+// One KQL that pivots Anomali → Jamf → Gigamon → BigID → Veeam
+// in a single round trip. This is the "magic" query that proves
+// the data really is correlated end-to-end across vendors.
+//
+// Returns one row per affected Mac with:
+//   - The Anomali IOC that originally flagged it
+//   - The Jamf alert evidence + signer details
+//   - The Gigamon flow evidence (C2 + file server)
+//   - The BigID sensitivity context for the touched file server
+//   - The Veeam recovery target (clean restore point)
+
+let anomali_iocs =
+    ThreatIntelIndicators
+    | where SourceSystem == "Anomali ThreatStream"
+    | where TimeGenerated > ago(1d)
+    | where ObservableValue in ("DEADBEEF99", "yeg88tzva7avny")
+    | summarize IocValues = make_set(ObservableValue),
+                IocLabels = make_set(tostring(Data.name)),
+                MaxConfidence = max(Confidence);
+let jamf_hits =
+    JamfProtectAlertsDemo_CL
+    | where TimeGenerated > ago(2d)
+    | where TargetBinarySigningTeamID == "DEADBEEF99"
+         or TargetProcessSHA256       == "yeg88tzva7avny"
+    | summarize
+        JamfAlertCount = count(),
+        JamfHighSev    = countif(EventSeverity == "High"),
+        JamfPrevented  = countif(EventResult == "Prevented"),
+        JamfAllowed    = countif(EventResult == "Allowed"),
+        Processes      = make_set(TargetProcessName),
+        SignerTypes    = make_set(TargetbinarySignerType),
+        FirstSeen      = min(TimeGenerated),
+        LastSeen       = max(TimeGenerated)
+        by DvcHostname;
+let gigamon_trail =
+    GigamonCcfMcpDemo_CL
+    | where TimeGenerated > ago(2h)
+    | where src_ip == "10.42.7.31"
+    | summarize
+        FlowCount   = count(),
+        BytesOut    = sum(tolong(src_bytes)),
+        BytesIn     = sum(tolong(dst_bytes)),
+        DnsQueries  = make_set(dns_query),
+        DstIps      = make_set(dst_ip),
+        AppNames    = make_set(app_name),
+        JA3s        = make_set(ssl_fingerprint_ja3)
+        by MacIp = src_ip;
+let bigid_exposure =
+    BigIDDSPMAssetStoreDemo_CL
+    | where TimeGenerated > ago(1d)
+    | where IPAddress == "10.42.10.50"
+    | summarize
+        Assets         = make_set(AssetName),
+        Classifications= make_set(Classification),
+        Sensitivity    = max(SensitivityLabel),
+        RecordCount    = sum(toint(AdditionalFields.RecordCount)),
+        Owner          = max(tostring(AssetOwner.DisplayName))
+        by FileServerIp = IPAddress;
+let veeam_recovery =
+    VeeamMalwareEventsDemo_CL
+    | where TimeGenerated > ago(2h)
+    | where MachineDisplayName == "fin-files-01"
+    | summarize
+        InfectedRpId   = take_anyif(RestorePointId, Status == "Infected"),
+        CleanRpId      = take_anyif(RestorePointId, MarkedClean == true),
+        CleanRpTime    = take_anyif(RestorePointCreationTime, MarkedClean == true),
+        AffectedFiles  = take_anyif(AffectedFiles,  Status == "Infected"),
+        MalwareName    = take_anyif(MalwareName,    Status == "Infected"),
+        Repository     = max(BackupRepository)
+        by Machine = MachineDisplayName;
+
+jamf_hits
+| extend MacIp = "10.42.7.31", FileServerIp = "10.42.10.50", Machine = "fin-files-01"
+| join kind=leftouter (gigamon_trail) on MacIp
+| join kind=leftouter (bigid_exposure) on FileServerIp
+| join kind=leftouter (veeam_recovery) on Machine
+| extend AnomaliIOCs = toscalar(anomali_iocs | project IocValues)
+| extend AnomaliConfidence = toscalar(anomali_iocs | project MaxConfidence)
+| project
+    DvcHostname,
+    AnomaliIOCs, AnomaliConfidence,
+    JamfAlertCount, JamfHighSev, JamfPrevented, JamfAllowed,
+    Processes, SignerTypes,
+    GigamonFlows = FlowCount, GigamonBytesOut = BytesOut,
+    C2_DNS = DnsQueries, External_Dsts = DstIps, JA3 = JA3s,
+    SensitiveAssets = Assets, Classification = Classifications,
+    Sensitivity, BlastRadius_Records = RecordCount, DataOwner = Owner,
+    Veeam_InfectedSnapshot = InfectedRpId,
+    Veeam_CleanSnapshot    = CleanRpId,
+    Veeam_CleanSnapshotAt  = CleanRpTime,
+    Veeam_MalwareName      = MalwareName,
+    FirstSeen, LastSeen

@@ -1,0 +1,24 @@
+[
+  {
+    "Confidence": "95",
+    "Description": "Apple Developer TeamID observed signing macOS payloads in a recent infostealer / data-exfil campaign targeting financial services. Anomali confidence high; pivoting on this TeamID in Sentinel reveals Mac endpoints where Jamf Protect already prevented or allowed signed binaries from this developer identity.",
+    "IndicatorName": "Anomali ThreatStream — malicious Apple TeamID DEADBEEF99",
+    "KillChain": "delivery",
+    "Labels": "[\"anomalithreatstream\",\"apt\",\"data-exfil\",\"macos\",\"high\"]",
+    "ObservableKey": "x-jamf-team-id:value",
+    "ObservableValue": "DEADBEEF99",
+    "TableName": "PrimaryResult",
+    "TimeGenerated": "2026-05-14T00:34:47.956Z"
+  },
+  {
+    "Confidence": "92",
+    "Description": "macOS scp wrapper signed under the malicious Apple TeamID. Observed exfiltrating sensitive files from compromised Mac endpoints to attacker infrastructure. Pivot this SHA against Jamf Protect alerts to find affected Macs.",
+    "IndicatorName": "Anomali ThreatStream — malicious macOS scp wrapper (SHA256)",
+    "KillChain": "actions-on-objectives",
+    "Labels": "[\"anomalithreatstream\",\"malware\",\"data-exfil\",\"macos\",\"high\"]",
+    "ObservableKey": "file:hashes.'SHA-256'",
+    "ObservableValue": "yeg88tzva7avny",
+    "TableName": "PrimaryResult",
+    "TimeGenerated": "2026-05-14T00:34:46.88Z"
+  }
+]

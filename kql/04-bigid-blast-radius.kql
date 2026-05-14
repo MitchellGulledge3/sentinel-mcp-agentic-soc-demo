@@ -1,0 +1,33 @@
+// ============================================================
+//  Phase 4 — BigID  →  what sensitive data is on that file server?
+// ============================================================
+//
+// Pivot from the file-server IP that the Mac touched over SMB
+// (10.42.10.50) onto BigID's sensitive-data catalog. Quantifies
+// the blast radius: classification, sensitivity label, record
+// counts, MNPI/PII flags.
+
+let file_server_ip = "10.42.10.50";  // fin-files-01
+BigIDDSPMAssetStoreDemo_CL
+| where TimeGenerated > ago(1d)
+| where IPAddress == file_server_ip
+| extend Policies      = tostring(AdditionalFields.BigIDPolicies)
+| extend RecordCount   = toint(AdditionalFields.RecordCount)
+| extend HasMNPI       = tobool(AdditionalFields.MNPIFlag)
+| extend HasSSN        = tobool(AdditionalFields.ContainsSSN)
+| extend HasBankAccts  = tobool(AdditionalFields.ContainsBankAccounts)
+| extend Note          = tostring(AdditionalFields.Note)
+| extend ExposureReason = array_concat(
+    iff(SensitivityLabel == "Highly Confidential", dynamic(["highly-confidential"]), dynamic([])),
+    iff(HasMNPI,        dynamic(["material-non-public-info"]),    dynamic([])),
+    iff(HasSSN,         dynamic(["contains-ssn"]),                dynamic([])),
+    iff(HasBankAccts,   dynamic(["contains-bank-accounts"]),      dynamic([])),
+    iff(ExternalUserWithPermissionCount > 0, dynamic(["external-share"]), dynamic([])),
+    iff(IsProtectedByDlp == false, dynamic(["no-dlp-coverage"]),  dynamic([])))
+| project
+    AssetName, AssetPath, AssetType, Classification, SensitivityLabel,
+    DeviceName, IPAddress, AssetOwner, Policies, RecordCount,
+    HasMNPI, HasSSN, HasBankAccts, IsProtectedByDlp,
+    InternalUserWithPermissionCount, ExternalUserWithPermissionCount,
+    Note, ExposureReason, LastAccessDateTime
+| order by SensitivityLabel asc

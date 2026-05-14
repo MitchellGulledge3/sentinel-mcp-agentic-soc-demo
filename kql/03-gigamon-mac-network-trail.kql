@@ -1,0 +1,45 @@
+// ============================================================
+//  Phase 3 — Gigamon  →  what did the compromised Mac talk to?
+// ============================================================
+//
+// Pivot on the Mac's IP (from the Jamf alert). Returns every flow
+// in the last 2 hours grouped by destination, with byte volumes
+// and a `FlowReason` array the agent can quote.
+//
+// What we expect to see:
+//   - DNS lookup of a C2 domain
+//   - Outbound TLS to a non-corporate IP with anomalous JA3
+//   - Big outbound TLS payload (data exfil)
+//   - SMB bulk-read from a finance file server
+
+let mac_ip = "10.42.7.31";   // jdoe-mbp.contoso.local
+GigamonCcfMcpDemo_CL
+| where TimeGenerated > ago(2h)
+| where src_ip == mac_ip
+| summarize
+    FlowCount    = count(),
+    BytesOut     = sum(tolong(src_bytes)),
+    BytesIn      = sum(tolong(dst_bytes)),
+    Apps         = make_set(app_name),
+    AppTags      = make_set(app_tags),
+    JA3s         = make_set(ssl_fingerprint_ja3),
+    DnsQueries   = make_set(dns_query),
+    SmbVersions  = make_set(smb_version),
+    FirstSeen    = min(TimeGenerated),
+    LastSeen     = max(TimeGenerated)
+    by dst_ip, dst_port, protocol
+| extend SuspiciousJA3 = array_length(JA3s) > 0 and JA3s has "e7d705a3286e19ea42f587b344ee6865"
+| extend ExternalDst   = not(dst_ip startswith "10." or dst_ip startswith "192.168.")
+| extend LargeUpload   = BytesOut > 10000000   // >10 MB out
+| extend SmbBulkRead   = dst_port == 445 and BytesIn > 5000000
+| extend FlowReason = array_concat(
+    iff(SuspiciousJA3, dynamic(["known-malicious-ja3"]), dynamic([])),
+    iff(ExternalDst and dst_port == 443, dynamic(["outbound-tls-to-external"]), dynamic([])),
+    iff(LargeUpload, dynamic(["large-upload"]), dynamic([])),
+    iff(SmbBulkRead, dynamic(["smb-bulk-read"]), dynamic([])),
+    iff(array_length(todynamic(DnsQueries)) > 0
+        and tostring(DnsQueries) has "update-mac-helper", dynamic(["c2-dns-lookup"]), dynamic([])))
+| project dst_ip, dst_port, protocol, Apps, AppTags, FlowCount,
+          BytesOut, BytesIn, JA3s, DnsQueries, SmbVersions,
+          FirstSeen, LastSeen, FlowReason
+| order by BytesOut desc, FlowCount desc

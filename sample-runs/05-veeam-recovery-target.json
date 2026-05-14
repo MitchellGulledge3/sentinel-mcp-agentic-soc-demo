@@ -1,0 +1,42 @@
+[
+  {
+    "AffectedFileCount": "47",
+    "AffectedFiles": "[\"\\\\\\\\fin-files-01\\\\finance\\\\Q4-2025-earnings\\\\Q4-2025-Earnings-PRE-RELEASE.xlsx\",\"\\\\\\\\fin-files-01\\\\finance\\\\Q4-2025-earnings\\\\Board-Materials-Draft.pptx\",\"\\\\\\\\fin-files-01\\\\finance\\\\Q4-2025-earnings\\\\Earnings-Press-Release.docx\"]",
+    "BackupRepository": "westus2-immutable-repo-01",
+    "DetectionMethod": "Inline scan + YARA + ML anomaly",
+    "EventType": "MalwareDetected",
+    "ImmutabilityState": "ImmutableUntil2026-08-13",
+    "JobName": "Finance-FileServer-Daily",
+    "MachineDisplayName": "fin-files-01",
+    "MalwareName": "macOS.ExfilStealer.A (Anomali-classified)",
+    "MarkedClean": "False",
+    "OriginatingProcess": "scp (jdoe-mbp.contoso.local)",
+    "RecoveryReason": "[\"infected-snapshot\",\"high-severity\",\"immutable-snapshot\",\"mass-file-impact\"]",
+    "RestorePointCreationTime": "2026-05-13T23:04:49Z",
+    "RestorePointId": "rp-fin-files-01-2026-05-13-T19-15",
+    "Severity": "High",
+    "Status": "Infected",
+    "TableName": "PrimaryResult",
+    "TimeGenerated": "2026-05-14T00:04:49Z"
+  },
+  {
+    "AffectedFileCount": "0",
+    "AffectedFiles": "[]",
+    "BackupRepository": "westus2-immutable-repo-01",
+    "DetectionMethod": "Inline scan + YARA + ML anomaly",
+    "EventType": "CleanRestorePointIdentified",
+    "ImmutabilityState": "ImmutableUntil2026-08-13",
+    "JobName": "Finance-FileServer-Daily",
+    "MachineDisplayName": "fin-files-01",
+    "MalwareName": "",
+    "MarkedClean": "True",
+    "OriginatingProcess": "",
+    "RecoveryReason": "[\"clean-restore-target\",\"immutable-snapshot\"]",
+    "RestorePointCreationTime": "2026-05-13T11:34:49Z",
+    "RestorePointId": "rp-fin-files-01-2026-05-13-T06-00",
+    "Severity": "Informational",
+    "Status": "Clean",
+    "TableName": "PrimaryResult",
+    "TimeGenerated": "2026-05-14T00:09:49Z"
+  }
+]

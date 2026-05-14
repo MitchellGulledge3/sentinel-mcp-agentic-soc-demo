@@ -1,0 +1,53 @@
+[
+  {
+    "AppTags": "[\"encrypted,suspicious-ja3\",\"encrypted,suspicious-ja3,large-upload\"]",
+    "Apps": "[\"TLS\"]",
+    "BytesIn": "27276",
+    "BytesOut": "15194370",
+    "DnsQueries": "[\"\"]",
+    "FirstSeen": "2026-05-13T23:09:47Z",
+    "FlowCount": "9",
+    "FlowReason": "[\"known-malicious-ja3\",\"large-upload\"]",
+    "JA3s": "[\"e7d705a3286e19ea42f587b344ee6865\"]",
+    "LastSeen": "2026-05-14T00:30:58Z",
+    "SmbVersions": "[\"\"]",
+    "TableName": "PrimaryResult",
+    "dst_ip": "185.220.101.42",
+    "dst_port": "",
+    "protocol": "TCP"
+  },
+  {
+    "AppTags": "[\"internal,bulk-read\"]",
+    "Apps": "[\"SMB\"]",
+    "BytesIn": "15225773",
+    "BytesOut": "801356",
+    "DnsQueries": "[\"\"]",
+    "FirstSeen": "2026-05-13T23:54:47Z",
+    "FlowCount": "6",
+    "FlowReason": "[]",
+    "JA3s": "[\"\"]",
+    "LastSeen": "2026-05-14T00:15:58Z",
+    "SmbVersions": "[\"3.1.1\"]",
+    "TableName": "PrimaryResult",
+    "dst_ip": "10.42.10.50",
+    "dst_port": "",
+    "protocol": "TCP"
+  },
+  {
+    "AppTags": "[\"lookup\"]",
+    "Apps": "[\"DNS\"]",
+    "BytesIn": "142",
+    "BytesOut": "142",
+    "DnsQueries": "[\"update-mac-helper.com\"]",
+    "FirstSeen": "2026-05-13T23:04:47Z",
+    "FlowCount": "3",
+    "FlowReason": "[\"c2-dns-lookup\"]",
+    "JA3s": "[\"\"]",
+    "LastSeen": "2026-05-13T23:10:58Z",
+    "SmbVersions": "[\"\"]",
+    "TableName": "PrimaryResult",
+    "dst_ip": "10.42.0.10",
+    "dst_port": "",
+    "protocol": "UDP"
+  }
+]
